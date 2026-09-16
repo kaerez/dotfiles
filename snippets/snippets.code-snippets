@@ -1,0 +1,74 @@
+{
+	// Snippets in Visual Studio Code
+	// https://code.visualstudio.com/docs/editing/userdefinedsnippets
+	//
+	//
+	// Language Identifiers
+	// https://code.visualstudio.com/docs/languages/identifiers
+	//
+	// Snippet Generator
+	// https://snippet-generator.app/
+	// https://github.com/pawelgrzybek/snippet-generator
+	//
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	//
+	// You can also restrict snippets to specific files using include/exclude patterns:
+	// "Test snippet": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "test",
+	// 	"body": "test('$1', () => {\n\t$0\n});",
+	// 	"include": ["**/*.test.ts", "*.spec.ts"],
+	// 	"exclude": ["**/temp/*.ts"],
+	// 	"description": "Insert test block"
+	// }
+	// 
+	// "sn1-aaa": {
+	// 	 "body": "$0asaasas $1 ${2:default instead} and ${3|one,two,three|}",
+	//   "prefix": "ppp"
+	// }
+
+	"Random Decimal 6": {
+		"body": "${RANDOM}",
+		"prefix": "rnd random dec"
+	},
+
+	"Random Hex 6": {
+		"body": "${RANDOM_HEX}",
+		"prefix": "rnd random hex"
+	},
+
+	"Random UUIDv4": {
+		"body": "${UUID}",
+		"prefix": "rnd random uuid"
+	},
+
+	"Block Comment Start": {
+		"body": "${BLOCK_COMMENT_START}",
+		"prefix": "block comment start"
+	},
+
+	"Block Comment End": {
+		"body": "${BLOCK_COMMENT_END}",
+		"prefix": "block comment end"
+	},
+
+	"Line Comment": {
+		"body": "${LINE_COMMENT}",
+		"prefix": "line comment"
+	}
+}
