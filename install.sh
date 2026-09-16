@@ -19,8 +19,16 @@ show_help() {
     echo "  help, -h      Show this help menu"
 }
 
-get_target_dirs() {
-    local dirs=(
+sync_files() {
+    echo "--> Downloading latest dotfiles..."
+    mkdir -p "$DOTFILES_DIR"
+    curl -fsSL "$ARCHIVE_URL" | tar -xz -C "$DOTFILES_DIR" --strip-components=1
+
+    # Guarantee execution permission on disk after extraction
+    [ -f "$DOTFILES_DIR/install.sh" ] && chmod +x "$DOTFILES_DIR/install.sh"
+
+    # Known IDE configuration target paths
+    local possible_dirs=(
         "$HOME/.config/Code - OSS/User"          # Cloud Shell / Code-OSS (Linux)
         "$HOME/.config/Code/User"                # Standard VS Code (Linux)
         "$HOME/.config/VSCodium/User"            # VSCodium (Linux)
@@ -32,40 +40,46 @@ get_target_dirs() {
         "$HOME/Library/Application Support/Antigravity/User" # Antigravity (macOS)
         "$HOME/Library/Application Support/Cursor/User"      # Cursor (macOS)
     )
-    for d in "${dirs[@]}"; do
-        if [ -d "$(dirname "$d")" ] || [ -d "$d" ]; then
-            echo "$d"
+
+    local found_any=0
+
+    for VSCODE_DIR in "${possible_dirs[@]}"; do
+        local parent_dir
+        parent_dir="$(dirname "$VSCODE_DIR")"
+
+        # Check if either the parent app folder or target User folder exists
+        if [ -d "$parent_dir" ] || [ -d "$VSCODE_DIR" ]; then
+            found_any=1
+            echo "--> Symlinking to: $VSCODE_DIR"
+            mkdir -p "$VSCODE_DIR/snippets"
+
+            [ -f "$DOTFILES_DIR/settings.json" ] && ln -sf "$DOTFILES_DIR/settings.json" "$VSCODE_DIR/settings.json"
+            [ -f "$DOTFILES_DIR/keybindings.json" ] && ln -sf "$DOTFILES_DIR/keybindings.json" "$VSCODE_DIR/keybindings.json"
+
+            if [ -d "$DOTFILES_DIR/snippets" ]; then
+                for snippet in "$DOTFILES_DIR/snippets"/*; do
+                    [ -e "$snippet" ] || continue
+                    ln -sf "$snippet" "$VSCODE_DIR/snippets/$(basename "$snippet")"
+                done
+            fi
         fi
     done
-}
 
-sync_files() {
-    echo "--> Downloading latest dotfiles..."
-    mkdir -p "$DOTFILES_DIR"
-    curl -fsSL "$ARCHIVE_URL" | tar -xz -C "$DOTFILES_DIR" --strip-components=1
-
-    # Guarantee execution permissions on the local script
-    if [ -f "$DOTFILES_DIR/install.sh" ]; then
-        chmod +x "$DOTFILES_DIR/install.sh"
-    fi
-
-    local targets=($(get_target_dirs))
-    [ ${#targets[@]} -eq 0 ] && targets=("$HOME/.config/Code - OSS/User")
-
-    for VSCODE_DIR in "${targets[@]}"; do
-        echo "--> Symlinking to: $VSCODE_DIR"
-        mkdir -p "$VSCODE_DIR/snippets"
-
-        [ -f "$DOTFILES_DIR/settings.json" ] && ln -sf "$DOTFILES_DIR/settings.json" "$VSCODE_DIR/settings.json"
-        [ -f "$DOTFILES_DIR/keybindings.json" ] && ln -sf "$DOTFILES_DIR/keybindings.json" "$VSCODE_DIR/keybindings.json"
-
+    # Fallback if no matching IDE directories exist yet
+    if [ "$found_any" -eq 0 ]; then
+        local fallback_dir="$HOME/.config/Code - OSS/User"
+        echo "--> No active IDE folder found. Creating default: $fallback_dir"
+        mkdir -p "$fallback_dir/snippets"
+        [ -f "$DOTFILES_DIR/settings.json" ] && ln -sf "$DOTFILES_DIR/settings.json" "$fallback_dir/settings.json"
+        [ -f "$DOTFILES_DIR/keybindings.json" ] && ln -sf "$DOTFILES_DIR/keybindings.json" "$fallback_dir/keybindings.json"
         if [ -d "$DOTFILES_DIR/snippets" ]; then
             for snippet in "$DOTFILES_DIR/snippets"/*; do
                 [ -e "$snippet" ] || continue
-                ln -sf "$snippet" "$VSCODE_DIR/snippets/$(basename "$snippet")"
+                ln -sf "$snippet" "$fallback_dir/snippets/$(basename "$snippet")"
             done
         fi
-    done
+    fi
+
     echo "==> Sync complete!"
 }
 
