@@ -9,7 +9,7 @@ SHELL_RC="$HOME/.bashrc"
 show_help() {
     echo "Dotfiles Installer & Sync Tool"
     echo ""
-    echo "Usage: ./install.sh [COMMAND]"
+    echo "Usage: ~/dotfiles/install.sh [COMMAND]"
     echo ""
     echo "Commands:"
     echo "  (no args)     Run full sync and enable background auto-sync"
@@ -44,6 +44,11 @@ sync_files() {
     mkdir -p "$DOTFILES_DIR"
     curl -fsSL "$ARCHIVE_URL" | tar -xz -C "$DOTFILES_DIR" --strip-components=1
 
+    # Guarantee execution permissions on the local script
+    if [ -f "$DOTFILES_DIR/install.sh" ]; then
+        chmod +x "$DOTFILES_DIR/install.sh"
+    fi
+
     local targets=($(get_target_dirs))
     [ ${#targets[@]} -eq 0 ] && targets=("$HOME/.config/Code - OSS/User")
 
@@ -66,7 +71,7 @@ sync_files() {
 
 enable_auto() {
     disable_auto
-    local sync_cmd="(curl -fsSL $ARCHIVE_URL | tar -xz -C \$HOME/dotfiles --strip-components=1) >/dev/null 2>&1 &"
+    local sync_cmd="(curl -fsSL $ARCHIVE_URL | tar -xz -C \$HOME/dotfiles --strip-components=1 && chmod +x \$HOME/dotfiles/install.sh) >/dev/null 2>&1 &"
     echo "" >> "$SHELL_RC"
     echo "# Auto-sync dotfiles" >> "$SHELL_RC"
     echo "$sync_cmd" >> "$SHELL_RC"
